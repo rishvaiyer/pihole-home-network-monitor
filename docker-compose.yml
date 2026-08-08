@@ -1,0 +1,62 @@
+services:
+  # --- Core: Pi-hole (network-wide ad/tracker blocking DNS server) ---
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    hostname: pihole
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-America/Los_Angeles}
+      FTLCONF_webserver_api_password: ${PIHOLE_PASSWORD:?Set PIHOLE_PASSWORD in your .env file — copy .env.example to .env first}
+      # Bridge networking hides the real client IP from Pi-hole unless we allow all listening interfaces.
+      FTLCONF_dns_listeningMode: "ALL"
+    volumes:
+      - ./data/pihole/etc-pihole:/etc/pihole
+      - ./data/pihole/etc-dnsmasq.d:/etc/dnsmasq.d
+    ports:
+      - "53:53/tcp"
+      - "53:53/udp"
+      - "${PIHOLE_WEB_PORT:-8080}:80/tcp"
+    cap_add:
+      - NET_ADMIN
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/admin/"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # --- Optional layer: NetAlertX (alerts you when a new/unknown device joins your network) ---
+  # Start with: docker compose --profile monitor up -d
+  # Needs host networking to see ARP traffic, so it only fully works on Linux hosts
+  # (i.e. once this is on the Raspberry Pi). On Docker Desktop for Mac it will start
+  # but device discovery will be unreliable — that's a Docker Desktop limitation, not a bug here.
+  netalertx:
+    image: ghcr.io/netalertx/netalertx:latest
+    container_name: netalertx
+    restart: unless-stopped
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - NET_BIND_SERVICE
+    environment:
+      TZ: ${TZ:-America/Los_Angeles}
+      PORT: ${NETALERTX_WEB_PORT:-20211}
+      # Comma-separated subnets/interfaces to scan, e.g. 192.168.1.0/24/eth0
+      # Leave blank on first run and set it from the NetAlertX web UI instead.
+      SCAN_SUBNETS: ${NETALERTX_SCAN_SUBNETS:-}
+    volumes:
+      - ./data/netalertx:/data
+    profiles: ["monitor"]
+
+  # --- Optional layer: Uptime Kuma (uptime/status monitoring for your home devices & services) ---
+  # Start with: docker compose --profile monitor up -d
+  uptime-kuma:
+    image: louislam/uptime-kuma:2
+    container_name: uptime-kuma
+    restart: unless-stopped
+    ports:
+      - "${UPTIME_KUMA_PORT:-3001}:3001"
+    volumes:
+      - ./data/uptime-kuma:/app/data
+    profiles: ["monitor"]

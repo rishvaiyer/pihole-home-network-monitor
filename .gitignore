@@ -1,0 +1,8 @@
+# Real secrets — never commit this
+.env
+
+# Runtime data created by the containers (Pi-hole DB, NetAlertX DB, Uptime Kuma DB, etc.)
+data/
+
+# OS cruft
+.DS_Store
