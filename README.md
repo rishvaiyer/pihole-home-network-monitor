@@ -147,36 +147,7 @@ inventory, Uptime Kuma's monitors) lives in `./data/`, outside the
 containers. Back it up by copying that folder; wiping and re-running
 `docker compose up -d` never loses it as long as `./data/` survives.
 
-## What else you could layer on top
 
-Roughly in order of "easy/light" to "heavier, Pi 4/5 territory":
-
-- **Unbound** — a local recursive DNS resolver, so Pi-hole stops depending on
-  a third-party DNS provider (Google/Cloudflare/etc.) at all and resolves
-  domains itself. More private, marginal latency cost.
-- **Extra Pi-hole blocklists** — [OISD](https://oisd.nl/) or
-  [HaGeZi](https://github.com/hagezi/dns-blocklists) lists cover far more
-  trackers/telemetry/malware domains than Pi-hole's defaults. Add them under
-  Pi-hole's admin UI → Adlists.
-- **WireGuard or Tailscale** — VPN back into your home network while you're
-  out, so your phone still gets Pi-hole filtering (and you can hit the admin
-  UIs) off Wi-Fi. Tailscale is the easier on-ramp for a first VPN.
-- **Homepage** ([gethomepage/homepage](https://github.com/gethomepage/homepage))
-  or **Homarr** — one dashboard tying together links + live widgets for
-  Pi-hole, Uptime Kuma, NetAlertX, etc. Nice once you have 3+ services.
-- **Watchtower** or **Diun** — Watchtower auto-updates your containers;
-  Diun instead just *notifies* you when a new image is available so you can
-  update deliberately. Diun is the safer default for something as central as
-  your DNS server.
-- **Speedtest Tracker** — logs your ISP speed over time on a schedule, so you
-  have receipts the next time your internet feels slow.
-- **Grafana + Prometheus + a Pi-hole exporter** — turns Pi-hole's query log
-  into real dashboards/graphs over time instead of the built-in stats page.
-  Worth it once you're curious about your data, but it's the heaviest add-on
-  here — better suited to a Pi 4/5 than the Zero 2 W.
-- **Home Assistant** — if this grows into a full smart-home hub, not just a
-  network monitor. Big enough to be its own project rather than a layer on
-  this one.
 
 ## About the "check for cameras / anti-tracking / Flipper Zero" ask
 
